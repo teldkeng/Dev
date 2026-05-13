@@ -68,6 +68,38 @@ Qualtrics.SurveyEngine.addOnload(function () {
 
     var instructionsDiv = document.getElementById("ds-instructions");
 
+    // Create practice badge element
+
+    var practiceBadge = document.createElement("div");
+
+    practiceBadge.id = "ds-practice-badge";
+
+    practiceBadge.innerHTML = "שלב תרגול";
+
+    practiceBadge.style.position = "fixed";
+
+    practiceBadge.style.top = "20px";
+
+    practiceBadge.style.right = "20px";
+
+    practiceBadge.style.backgroundColor = "#e67e22";
+
+    practiceBadge.style.color = "white";
+
+    practiceBadge.style.padding = "10px 15px";
+
+    practiceBadge.style.borderRadius = "4px";
+
+    practiceBadge.style.fontWeight = "bold";
+
+    practiceBadge.style.fontSize = "14px";
+
+    practiceBadge.style.zIndex = "9999";
+
+    practiceBadge.style.display = isPractice ? "block" : "none";
+
+    document.body.appendChild(practiceBadge);
+
 
 
     // -- תחילת מנגנון הגנה RTL --
@@ -135,6 +167,8 @@ Qualtrics.SurveyEngine.addOnload(function () {
         inputContainer.style.display = "none";
 
         inputField.value = "";
+
+        document.getElementById("ds-practice-badge").style.display = isPractice ? "block" : "none";
 
         instructionsDiv.innerHTML = isPractice ? "זה שלב תרגול - זכור את הספרות..." : "זכור את הספרות...";
 
@@ -204,7 +238,13 @@ Qualtrics.SurveyEngine.addOnload(function () {
 
                     isPractice = false;
 
-                    alert("סיימת את שלב התרגול! עכשיו תתחיל המטלה האמיתית.");
+                    document.getElementById("ds-practice-badge").style.display = "none";
+
+                    inputContainer.style.display = "none";
+
+                    inputField.value = "";
+
+                    instructionsDiv.innerHTML = "סיימת את שלב התרגול! עכשיו תתחיל המטלה האמיתית.";
 
                     currentLengthIndex = 0;
 
@@ -212,11 +252,7 @@ Qualtrics.SurveyEngine.addOnload(function () {
 
                     errorsInCurrentLength = 0;
 
-                    inputContainer.style.display = "none";
-
-                    inputField.value = "";
-
-                    setTimeout(startTrial, 1000);
+                    setTimeout(startTrial, 2500);
 
                 } else {
 
@@ -226,43 +262,49 @@ Qualtrics.SurveyEngine.addOnload(function () {
 
                     instructionsDiv.innerHTML = "תשובה נכונה! הכן עצמך לרצף הבא...";
 
-                    setTimeout(startTrial, 1500);
+                    setTimeout(startTrial, 2500);
 
                 }
 
             } else {
 
-                alert("טעות. עליך להקליד בסדר הפוך. הסדר הנכון היה: " + expected);
+                inputContainer.style.display = "none";
+
+                inputField.value = "";
+
+                instructionsDiv.innerHTML = "טעות. עליך להקליד בסדר הפוך. הסדר הנכון היה: " + expected;
 
                 practiceTrialIndex++;
 
                 if (practiceTrialIndex >= practiceSequences.length) {
 
-                    isPractice = false;
+                    setTimeout(function () {
 
-                    alert("סיימת את שלב התרגול! עכשיו תתחיל המטלה האמיתית.");
+                        isPractice = false;
 
-                    currentLengthIndex = 0;
+                        document.getElementById("ds-practice-badge").style.display = "none";
 
-                    currentTrialIndex = 0;
+                        instructionsDiv.innerHTML = "סיימת את שלב התרגול! עכשיו תתחיל המטלה האמיתית.";
 
-                    errorsInCurrentLength = 0;
+                        currentLengthIndex = 0;
 
-                    inputContainer.style.display = "none";
+                        currentTrialIndex = 0;
 
-                    inputField.value = "";
+                        errorsInCurrentLength = 0;
 
-                    setTimeout(startTrial, 1000);
+                        setTimeout(startTrial, 2500);
+
+                    }, 2500);
 
                 } else {
 
-                    inputContainer.style.display = "none";
+                    setTimeout(function () {
 
-                    inputField.value = "";
+                        instructionsDiv.innerHTML = "נמשיך לגירוי התרגול הבא...";
 
-                    instructionsDiv.innerHTML = "נמשיך לגירוי התרגול הבא...";
+                        setTimeout(startTrial, 2500);
 
-                    setTimeout(startTrial, 1500);
+                    }, 2500);
 
                 }
 
