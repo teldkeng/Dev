@@ -1,10 +1,8 @@
-Qualtrics.SurveyEngine.addOnload(function() {
+Qualtrics.SurveyEngine.addOnload(function () {
 
     var that = this;
 
     that.hideNextButton(); // מניעת התקדמות מוקדמת לפני סיום המטלה
-
-
 
     // איתור והסתרת תיבת הטקסט המקורית של Qualtrics (כיור הנתונים)
 
@@ -12,7 +10,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
     var qualtricsDataSink = qContainer.querySelector('textarea') || qContainer.querySelector('input[type="text"]');
 
-    if(qualtricsDataSink) {
+    if (qualtricsDataSink) {
 
         qualtricsDataSink.style.display = 'none'; // הסתרה מעיני הנבדק
 
@@ -52,6 +50,12 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
     var logs = [];
 
+    var isPractice = true;
+
+    var practiceSequences = [[[3, 1], [2, 4]]];
+
+    var practiceTrialIndex = 0;
+
 
 
     var stimulusDiv = document.getElementById("ds-stimulus");
@@ -68,11 +72,11 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
     // -- תחילת מנגנון הגנה RTL --
 
-    
+
 
     // נטרול הדבקה
 
-    inputField.addEventListener('paste', function(e) {
+    inputField.addEventListener('paste', function (e) {
 
         e.preventDefault();
 
@@ -82,17 +86,17 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
     // סניטציה ונעילת סמן
 
-    inputField.addEventListener('input', function(e) {
+    inputField.addEventListener('input', function (e) {
 
         var sanitizedValue = this.value.replace(/\D/g, '');
 
         this.value = sanitizedValue;
 
-        
+
 
         var len = this.value.length;
 
-        setTimeout(function() {
+        setTimeout(function () {
 
             inputField.setSelectionRange(len, len);
 
@@ -100,7 +104,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
     });
 
-    
+
 
     // -- סוף מנגנון הגנה RTL --
 
@@ -108,7 +112,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
     // תמיכה בהזנה באמצעות Enter - מתוקן וחסין Qualtrics
 
-    inputField.addEventListener("keydown", function(event) {
+    inputField.addEventListener("keydown", function (event) {
 
         // זיהוי המקש בשתי שיטות לתאימות דפדפנים מקסימלית
 
@@ -132,9 +136,9 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
         inputField.value = "";
 
-        instructionsDiv.innerHTML = "זכור את הספרות...";
+        instructionsDiv.innerHTML = isPractice ? "זה שלב תרגול - זכור את הספרות..." : "זכור את הספרות...";
 
-        var seq = sequences[currentLengthIndex][currentTrialIndex];
+        var seq = isPractice ? practiceSequences[practiceTrialIndex] : sequences[currentLengthIndex][currentTrialIndex];
 
         playSequence(seq, 0);
 
@@ -148,15 +152,15 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
             stimulusDiv.innerHTML = seq[index];
 
-            setTimeout(function() {
+            setTimeout(function () {
 
                 stimulusDiv.innerHTML = "";
 
-                setTimeout(function() {
+                setTimeout(function () {
 
                     playSequence(seq, index + 1);
 
-                }, 500); // מרווח ISI
+                }, 200); // מרווח ISI
 
             }, 1000); // זמן חשיפה
 
@@ -164,7 +168,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
             stimulusDiv.innerHTML = "";
 
-            instructionsDiv.innerHTML = "הקלד את הספרות בסדר הפוך (ולחץ Enter):";
+            instructionsDiv.innerHTML = isPractice ? "תרגול: הקלד בסדר הפוך (ולחץ Enter):" : "הקלד את הספרות בסדר הפוך (ולחץ Enter):";
 
             inputContainer.style.display = "block";
 
@@ -176,11 +180,11 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
 
 
-    submitBtn.onclick = function() {
+    submitBtn.onclick = function () {
 
-        var response = inputField.value.trim().replace(/\D/g, ''); 
+        var response = inputField.value.trim().replace(/\D/g, '');
 
-        var seq = sequences[currentLengthIndex][currentTrialIndex];
+        var seq = isPractice ? practiceSequences[practiceTrialIndex] : sequences[currentLengthIndex][currentTrialIndex];
 
         var expected = seq.slice().reverse().join("");
 
@@ -188,7 +192,57 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
         var isCorrect = (response === expected);
 
-        
+
+
+        if (isPractice) {
+
+            if (isCorrect) {
+
+                practiceTrialIndex++;
+
+                if (practiceTrialIndex >= practiceSequences.length) {
+
+                    isPractice = false;
+
+                    alert("סיימת את שלב התרגול! עכשיו תתחיל המטלה האמיתית.");
+
+                    currentLengthIndex = 0;
+
+                    currentTrialIndex = 0;
+
+                    errorsInCurrentLength = 0;
+
+                    inputContainer.style.display = "none";
+
+                    inputField.value = "";
+
+                    setTimeout(startTrial, 1000);
+
+                } else {
+
+                    inputContainer.style.display = "none";
+
+                    inputField.value = "";
+
+                    instructionsDiv.innerHTML = "תשובה נכונה! הכן עצמך לרצף הבא...";
+
+                    setTimeout(startTrial, 1500);
+
+                }
+
+            } else {
+
+                alert("טעות. עליך להקליד בסדר הפוך. הסדר הנכון היה: " + expected);
+
+                inputField.value = "";
+
+                inputField.focus();
+
+            }
+
+            return;
+
+        }
 
         if (isCorrect) {
 
@@ -238,7 +292,7 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
                 currentLengthIndex++;
 
-                errorsInCurrentLength = 0; 
+                errorsInCurrentLength = 0;
 
             }
 
@@ -272,15 +326,15 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
         stimulusDiv.innerHTML = "";
 
-        
+
 
         // כתיבה ישירה של הציון הסופי בלבד לכיור הנתונים
 
-        if(qualtricsDataSink) {
+        if (qualtricsDataSink) {
 
             qualtricsDataSink.value = totalScore;
 
-            
+
 
             // אילוץ אירועי קלט כדי ש-Qualtrics יקלוט את הנתון
 
@@ -296,13 +350,13 @@ Qualtrics.SurveyEngine.addOnload(function() {
 
         Qualtrics.SurveyEngine.setEmbeddedData('DS_TotalScore', totalScore);
 
-        
+
 
         // המשך אוטומטי לעמוד הבא
 
-        setTimeout(function() {
+        setTimeout(function () {
 
-            that.clickNextButton(); 
+            that.clickNextButton();
 
         }, 1000);
 
