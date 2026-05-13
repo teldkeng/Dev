@@ -52,7 +52,7 @@ Qualtrics.SurveyEngine.addOnload(function () {
 
     var isPractice = true;
 
-    var practiceSequences = [[[3, 1], [2, 4]]];
+    var practiceSequences = [[3, 1], [2, 4]];
 
     var practiceTrialIndex = 0;
 
@@ -162,7 +162,7 @@ Qualtrics.SurveyEngine.addOnload(function () {
 
                 }, 200); // מרווח ISI
 
-            }, 1000); // זמן חשיפה
+            }, 800); // זמן חשיפה
 
         } else {
 
@@ -234,9 +234,37 @@ Qualtrics.SurveyEngine.addOnload(function () {
 
                 alert("טעות. עליך להקליד בסדר הפוך. הסדר הנכון היה: " + expected);
 
-                inputField.value = "";
+                practiceTrialIndex++;
 
-                inputField.focus();
+                if (practiceTrialIndex >= practiceSequences.length) {
+
+                    isPractice = false;
+
+                    alert("סיימת את שלב התרגול! עכשיו תתחיל המטלה האמיתית.");
+
+                    currentLengthIndex = 0;
+
+                    currentTrialIndex = 0;
+
+                    errorsInCurrentLength = 0;
+
+                    inputContainer.style.display = "none";
+
+                    inputField.value = "";
+
+                    setTimeout(startTrial, 1000);
+
+                } else {
+
+                    inputContainer.style.display = "none";
+
+                    inputField.value = "";
+
+                    instructionsDiv.innerHTML = "נמשיך לגירוי התרגול הבא...";
+
+                    setTimeout(startTrial, 1500);
+
+                }
 
             }
 
@@ -247,8 +275,6 @@ Qualtrics.SurveyEngine.addOnload(function () {
         if (isCorrect) {
 
             totalScore++;
-
-            errorsInCurrentLength = 0;
 
         } else {
 
